@@ -7,12 +7,39 @@ from sqlalchemy import select
 from app.tasks.celery_app import celery_app
 from app.db.session import AsyncSessionLocal
 from app.models import Booking, BookingStatus
+from app.services.email import EmailService
 
 
 @celery_app.task(bind=True, max_retries=3, default_retry_delay=30)
 def send_booking_confirmation_email(self, booking_id: str):
-    # Plug in your real email provider (SES, SendGrid, etc.) here.
-    print(f"[email] Sending confirmation for booking {booking_id}")
+    """Send a booking confirmation email via Resend."""
+    try:
+        asyncio.run(_send_confirmation(booking_id))
+    except Exception as exc:
+        self.retry(exc=exc)
+
+
+async def _send_confirmation(booking_id: str):
+    """Fetch booking details and send confirmation email."""
+    async with AsyncSessionLocal() as db:
+        booking = await db.get(Booking, booking_id)
+        if not booking:
+            print(f"[email] Booking {booking_id} not found")
+            return
+
+        movie = booking.screening.movie
+        screening = booking.screening
+        seats = [f"{bs.seat.row_label}{bs.seat.seat_number}" for bs in booking.booking_seats]
+
+        email_service = EmailService()
+        await email_service.send_booking_confirmation(
+            to=booking.user.email,
+            booking_id=booking_id,
+            movie_title=movie.title,
+            screening_time=screening.start_time.isoformat(),
+            seats=seats,
+        )
+        print(f"[email] Sent confirmation for booking {booking_id} to {booking.user.email}")
 
 
 async def _release_booking(booking_id: uuid.UUID):

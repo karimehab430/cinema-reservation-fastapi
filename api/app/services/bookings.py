@@ -72,7 +72,7 @@ class BookingService:
 
         await self.db.commit()
         await self.db.refresh(booking)
-        release_seats_task.apply_async(args=[str(booking.id)], eta=expires_at)
+        release_seats_task.apply_async(args=[str(booking.id)], eta=expires_at) # type: ignore
 
         logger.info(
             "booking_created",
@@ -99,7 +99,7 @@ class BookingService:
         booking.expires_at = None
         await self.db.commit()
         await self.db.refresh(booking)
-        send_booking_confirmation_email.delay(str(booking.id))
+        send_booking_confirmation_email.delay(str(booking.id)) # type: ignore
 
         logger.info(
             "payment_completed",

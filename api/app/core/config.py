@@ -17,6 +17,10 @@ class Settings(BaseSettings):
     refresh_token_expire_days: int = Field(default=7, ge=1)
     seat_hold_minutes: int = Field(default=10, ge=1)
 
+    # Email configuration
+    resend_api_key: str = Field(default="re_test_key")
+    resend_from_email: str = Field(default="noreply@cinema.example.com")
+
     @field_validator("jwt_secret")
     @classmethod
     def validate_jwt_secret(cls, value: str) -> str:

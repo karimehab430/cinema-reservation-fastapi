@@ -22,7 +22,9 @@ async def list_screenings(
     order: str = Query("asc"),
 ):
     service = ScreeningService(db)
-    items, total = await service.list_screenings(movie_id, cinema_id, on_date, page, page_size, sort_by, order)
+    items, total = await service.list_screenings(
+        movie_id, cinema_id, on_date, page, page_size, sort_by, order
+    )
     return {"items": items, "total": total, "page": page, "page_size": page_size}
 
 
