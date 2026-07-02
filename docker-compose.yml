@@ -1,0 +1,49 @@
+services:
+  api:
+    build: ./api
+    command: sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"
+    ports:
+      - "8000:8000"
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  worker:
+    build: ./api
+    command: celery -A app.tasks.celery_app.celery_app worker -Q default,high_priority -l info
+    env_file: .env
+    depends_on:
+      - db
+      - redis
+
+  beat:
+    build: ./api
+    command: celery -A app.tasks.celery_app.celery_app beat -l info
+    env_file: .env
+    depends_on:
+      - db
+      - redis
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: cinema
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d cinema"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+
+volumes:
+  pgdata:
