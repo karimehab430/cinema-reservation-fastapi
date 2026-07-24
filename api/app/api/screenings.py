@@ -1,9 +1,10 @@
 import uuid
 from datetime import date
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.dependencies import DbSession
+from app.dependencies import get_db
 from app.schemas import PaginatedResponse, ScreeningOut, SeatOut
 from app.services.screenings import ScreeningService
 
@@ -12,7 +13,7 @@ router = APIRouter(prefix="/api/v1/screenings", tags=["screenings"])
 
 @router.get("", response_model=PaginatedResponse[ScreeningOut])
 async def list_screenings(
-    db: DbSession,
+    db: AsyncSession = Depends(get_db),
     movie_id: uuid.UUID | None = None,
     cinema_id: uuid.UUID | None = None,
     on_date: date | None = Query(None, alias="date"),
@@ -29,6 +30,6 @@ async def list_screenings(
 
 
 @router.get("/{screening_id}/seats", response_model=list[SeatOut])
-async def get_screening_seats(screening_id: uuid.UUID, db: DbSession):
+async def get_screening_seats(screening_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
     service = ScreeningService(db)
     return await service.get_screening_seats(screening_id)

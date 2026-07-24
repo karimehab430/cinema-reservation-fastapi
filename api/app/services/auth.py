@@ -36,7 +36,7 @@ class AuthService:
             email=str(payload.email),
             hashed_password=hash_password(payload.password),
             full_name=payload.full_name,
-            role=UserRole.USER.value,
+            role=UserRole.USER,
         )
         self.db.add(user)
         await self.db.commit()

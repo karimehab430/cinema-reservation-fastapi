@@ -53,7 +53,7 @@ def test_movie_service_uses_cache_when_available():
             "page": 1,
             "page_size": 20,
         }
-        await cache.set("movies:list:::1:20:title:asc", payload)
+        await cache.set("movies:list::1:20:title:asc", payload)
 
         service = MovieService(db=None, cache=cache)
         items, total = await service.list_movies(None, 1, 20, "title", "asc")

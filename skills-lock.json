@@ -1,11 +1,23 @@
 {
   "version": 1,
   "skills": {
+    "SQLAlchemy ORM Expert": {
+      "source": "manutej/luxor-claude-marketplace",
+      "sourceType": "github",
+      "skillPath": "plugins/luxor-database-pro/skills/sqlalchemy/SKILL.md",
+      "computedHash": "cdfee3481fc7c1cde9aee57f8500c05e8a445641550efd7b7b36b42a85cf5566"
+    },
     "fastapi-python": {
       "source": "mindrally/skills",
       "sourceType": "github",
       "skillPath": "fastapi-python/SKILL.md",
       "computedHash": "4521c6090735152b7b8df670cefe5c1c6d1dcaa115de67bb96e74ebf802d4f24"
+    },
+    "pytest-coverage": {
+      "source": "github/awesome-copilot",
+      "sourceType": "github",
+      "skillPath": "skills/pytest-coverage/SKILL.md",
+      "computedHash": "06481f4bbc6d80a52091ec9ba5856eb1dc5f80cbabb40fd4ad02aaea3085a0dc"
     }
   }
 }

@@ -16,8 +16,8 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/token")
 
 
 async def get_current_user(
+    db: Annotated[AsyncSession, Depends(get_db)],
     token: str = Depends(oauth2_scheme),
-    db: DbSession,
 ) -> User:
     credentials_exc = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -44,6 +44,8 @@ CurrentUser = Annotated[User, Depends(get_current_user)]
 
 
 async def get_current_admin(user: CurrentUser) -> User:
-    if user.role != UserRole.ADMIN.value:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin privileges required")
+    if user.role != UserRole.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Admin privileges required"
+        )
     return user

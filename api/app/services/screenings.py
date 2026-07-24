@@ -68,7 +68,7 @@ class ScreeningService:
             .where(
                 Booking.screening_id == screening_id,
                 Booking.status.in_(
-                    [BookingStatus.PENDING.value, BookingStatus.CONFIRMED.value]
+                    [BookingStatus.PENDING, BookingStatus.CONFIRMED]
                 ),
             )
         )

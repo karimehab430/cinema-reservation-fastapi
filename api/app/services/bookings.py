@@ -24,6 +24,7 @@ class BookingService:
     async def reserve_seats(
         self, payload: ReserveRequest, user_id: uuid.UUID
     ) -> Booking:
+        
         if not payload.seat_ids:
             raise ValidationError("No seats selected")
 
@@ -51,7 +52,7 @@ class BookingService:
                     Booking.screening_id == screening.id,
                     BookingSeat.seat_id.in_(locked_ids),
                     Booking.status.in_(
-                        [BookingStatus.PENDING.value, BookingStatus.CONFIRMED.value]
+                        [BookingStatus.PENDING, BookingStatus.CONFIRMED]
                     ),
                 )
             )
@@ -67,7 +68,7 @@ class BookingService:
             booking = Booking(
                 user_id=user_id,
                 screening_id=screening.id,
-                status=BookingStatus.PENDING.value,
+                status=BookingStatus.PENDING,
                 expires_at=expires_at,
                 total_amount=total,
             )
@@ -103,13 +104,13 @@ class BookingService:
             booking = (await self.db.execute(stmt)).scalar_one_or_none()
             if not booking or booking.user_id != user_id:
                 raise NotFoundError("Booking not found")
-            if booking.status != BookingStatus.PENDING.value:
-                raise ConflictError(f"Booking is {booking.status}, cannot confirm")
+            if booking.status != BookingStatus.PENDING:
+                raise ConflictError(f"Booking is {booking.status.value}, cannot confirm")
             if booking.expires_at and booking.expires_at < datetime.now(timezone.utc):
-                booking.status = BookingStatus.EXPIRED.value
+                booking.status = BookingStatus.EXPIRED
                 expired = True
             else:
-                booking.status = BookingStatus.CONFIRMED.value
+                booking.status = BookingStatus.CONFIRMED
                 booking.expires_at = None
 
         if expired:
@@ -174,7 +175,7 @@ class BookingService:
             booking = (await self.db.execute(stmt)).scalar_one_or_none()
             if not booking or booking.user_id != user_id:
                 raise NotFoundError("Booking not found")
-            if booking.status != BookingStatus.PENDING.value:
+            if booking.status != BookingStatus.PENDING:
                 raise ConflictError("Only pending bookings can be cancelled")
 
-            booking.status = BookingStatus.CANCELLED.value
+            booking.status = BookingStatus.CANCELLED

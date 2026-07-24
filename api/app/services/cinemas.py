@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.cache import Cache, serialize_model
 from app.models import Cinema
+from app.schemas import CinemaCreate
 
 
 class CinemaService:
@@ -29,3 +30,14 @@ class CinemaService:
         payload = {"items": [serialize_model(item) for item in items], "total": int(total or 0)}
         await self.cache.set(cache_key, payload, ttl_seconds=300)
         return items, int(total or 0)
+
+    async def create_cinema(self, payload: CinemaCreate) -> Cinema:
+        if self.db is None:
+            raise ValueError("Database session is required")
+
+        cinema = Cinema(name=payload.name, location=payload.location)
+        self.db.add(cinema)
+        await self.db.commit()
+        await self.db.refresh(cinema)
+        await self.cache.delete_pattern("cinemas:list:")
+        return cinema

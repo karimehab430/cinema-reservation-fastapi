@@ -1,8 +1,9 @@
 import uuid
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.dependencies import DbSession
+from app.dependencies import get_db
 from app.schemas import MovieOut, PaginatedResponse
 from app.services.movies import MovieService
 
@@ -11,7 +12,7 @@ router = APIRouter(prefix="/api/v1/movies", tags=["movies"])
 
 @router.get("", response_model=PaginatedResponse[MovieOut])
 async def list_movies(
-    db: DbSession,
+    db: AsyncSession = Depends(get_db),
     search: str | None = None,
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1),
@@ -24,6 +25,6 @@ async def list_movies(
 
 
 @router.get("/{movie_id}", response_model=MovieOut)
-async def get_movie(movie_id: uuid.UUID, db: DbSession):
+async def get_movie(movie_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
     service = MovieService(db)
     return await service.get_movie(movie_id)
